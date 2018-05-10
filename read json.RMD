@@ -1,0 +1,32 @@
+---
+title: "Read Json"
+author: "Siyi Sun"
+date: "April 15, 2018"
+output: html_document
+---
+
+```{r}
+library(rjson)
+library(dplyr)
+library(jsonlite)
+library(plyr)
+
+out <- lapply(readLines("business.json"), fromJSON)
+data <- out
+
+str(data)
+data[[1]]
+
+df <- data.frame(t(sapply(data,c)))
+df1 <- apply(df,2,as.character)
+write.csv(df1, file = "business.csv")
+summary(df$categories)
+
+#only want restaurant in newyork
+```
+
+```{r}
+
+getwd()
+```
+

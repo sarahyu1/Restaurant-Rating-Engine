@@ -1,0 +1,105 @@
+---
+title: "Plots"
+author: "Siyi Sun"
+date: "May 5, 2018"
+output: pdf_document
+---
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r}
+data <- read.csv("attribute10.csv")
+rate <- read.csv("rates.csv")
+colnames(data)
+df4 <- data3 %>%
+  select(X, review_count)
+#WiFi, OutdoorSeating, valet, RestaurantsTakeOut, RestaurantsPriceRange2, RestaurantsReservations, RestaurantDelivery, RestaurantsGoodForGroups, RestaurantsCounterService, RestaurantsTableService, GoodForKids, GoodForDancing, GoodForMeal, latenight, vegan, casual, BikeParking, BusinessParking, BusinessAcceptsBitcoin, intimate, Caters, DogsAllowed, NoiseLevel, touristy, Alcohol, no_music, validated, hipster, lot, street, DriveThru, HappyHour, background_music, Smoking, WheelchairAccessible, video, wednesday, upscale, BestNights, BYOB, BYOBCorkage, CoatCheck, Corkage, DietaryRestrictions, divey, halal, jukebox, karaoke, kosher, live, Open24Hours, 
+
+#data <- data%>%
+#  select(id, breakfast, everything())
+data1 <- data %>% select(BYOBCorkage, BYOB, Corkage)
+data <- data %>% select(-c(asian, africanamerican, extensions, AcceptsInsurance, Open24Hours))
+#Replace/combine Columns
+data <- data %>% 
+  mutate(Alcohol1 = coalesce(Open24Hours, Open24Hours.1 )) %>%
+  subset(select = -c(Open24Hours, Open24Hours.1))%>%
+  rename(Open24Hours = Alcohol1)
+summary(data1)
+which(!is.na(data1[,1]))
+data <- data%>% select()
+```
+
+
+
+```{r}
+a <- rep(NA,5)
+for(i in 1:dim(data)[2]){
+  a[i] <- mean(!is.na(data[,i]))
+}
+name <- colnames(data)[order(a, decreasing = T)]
+fillrate <- a[order(a, decreasing = T)]
+fillrate <- sprintf("%.4f",fillrate)
+table1 <- cbind(name, fillrate)
+table <- table1[order(name),]
+#data <- data[,-1]
+#ggplot(data, aes(y = ))
+write.csv(data, file = "data_2.csv")
+```
+
+combine tables
+```{r}
+x <- TableA %>% 
+  left.join(select(TableB, x, y), by = c("id" = "y"))
+data <- df4 %>% left_join(data, by = c("X" = "id")) %>%
+  rename(id = X)
+
+```
+
+plots
+```{r}
+ggplot(data, aes(y = stars, x = WiFi)) +
+  geom_boxplot()
+ggplot(data, aes(stars)) + geom_histogram()
+ggplot(data, aes(y = stars, x = RestaurantsPriceRange)) + geom_point()
+par(mfrow=c(2,5))
+
+  #ByAppointmentOnly, RestaurantsAttire, X.gluten.free, X.soy.free, valet, RestaurantsTakeOut, RestaurantsPriceRange, RestaurantsCounterService, vegan, vegetarian, classy, trendy, touristy, intimate, validated, street, hipster, DriveThru, HappyHour, video, BYOBCorkage, Corkage, DietaryRestrictions, halal, kosher, 30, 31,35, 38, 42,43, 45, 46, 47, 51, 55, 57, 58, 60, 63
+ggplot(data, aes(y = stars, x = ByAppointmentOnly)) +
+  geom_boxplot()
+
+name <- colnames(data)
+name[c(21)]
+name
+
+subdata <- data %>% select(stars, ByAppointmentOnly, RestaurantsAttire, glutenFree, soyFree, valet, RestaurantsTakeOut, RestaurantsPriceRange, RestaurantsCounterService, vegan, vegetarian, classy, trendy, touristy, intimate, validated, street, hipster, DriveThru, HappyHour, video, BYOBCorkage, Corkage, DietaryRestrictions, halal, kosher)
+
+summary(subdata)
+summary(subdata$RestaurantsAttire)
+for(i in 1:dim(subdata)[2]){
+  a[i] <- mean(!is.na(subdata[,i]))
+}
+name <- colnames(subdata)[order(a, decreasing = T)]
+fillrate <- a[order(a, decreasing = T)]
+fillrate <- sprintf("%.4f",fillrate)
+table1 <- cbind(name, fillrate)
+table <- table1[order(name),]
+```
+
+```{r}
+p <- rep(NA, 26)
+for (i in 2:dim(subdata)[2]){
+   ggplot(subdata, aes(y = stars, x = subdata[,i])) + geom_boxplot()
+}
+#data <- read.csv("data_1.csv")
+#data <- data %>% select(-wednesday)
+summary(data)
+
+```
+
+
+
+
+

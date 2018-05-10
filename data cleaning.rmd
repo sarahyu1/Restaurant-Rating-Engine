@@ -1,0 +1,151 @@
+---
+title: "data cleaning"
+author: "Siyi Sun"
+date: "April 17, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+#A brief summary of this data
+NY State only has 18 obs. None of them is from NYC. so we may need to fetch new data, or we may need to adjust our proposal. Most of the observations in this file are from AZ, NV, and ON. Among those observations, there are many categories other than restaurants. 
+
+I ran a test on data from the city Phoenix, which contributes the majority of data to that of state AZ. In this subset, around 0.27 of data is categorized as food, 4743 obs.
+
+##Things need to be decided
+* Do we use this data or new data fetched?
+* What attributes do we want to include in our model as predictors?
+ One attribute example:
+list(RestaurantsTableService = TRUE, GoodForMeal = list(dessert = FALSE, latenight = FALSE, lunch = FALSE, dinner = FALSE, breakfast = FALSE, brunch = FALSE), DogsAllowed = TRUE, Alcohol = "none", Caters = TRUE, HasTV = FALSE, RestaurantsGoodForGroups = TRUE, RestaurantsAttire = "casual", RestaurantsReservations = TRUE, OutdoorSeating = FALSE, BusinessAcceptsCreditCards = TRUE, RestaurantsPriceRange2 = 1, BusinessAcceptsBitcoin = FALSE, BikeParking = TRUE, RestaurantsDelivery = FALSE, RestaurantsTakeOut = TRUE, 
+    GoodForKids = TRUE, WheelchairAccessible = TRUE, BusinessParking = list(garage = FALSE, street = FALSE, validated = FALSE, lot = TRUE, valet = FALSE))
+* Do we care about open hours?
+* It seems that we can match restaurants' locations with longitude and latitude. But I am not sure how to apply that exactly. 
+
+```{r message = F, warning = F}
+#data <- read.csv("business.csv")
+#head(data)
+```
+
+```{r}
+###subset data
+#library(tidyverse)
+#df1 <- subset(data, state == "AZ" & city == "Phoenix")
+#summary(data$state)
+#summary(df1$city)
+b <- data$categories
+food <- grepl("Food",  b)
+restaurant <- grepl("Restaurant", b)
+mix <- ifelse(food > restaurant, food, restaurant)
+#head(df1$categories)
+
+#mean(mix)
+#17213*0.27
+#df2 <- df1[mix,]
+#head(df2)
+data2 <- data[mix,]
+#write.csv(data2, file = "restaurant.csv")
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+#write.csv(data, file = "attribute3.csv")
+head(data)
+test <- data[1:10,20:50];test
+name <- colnames(data);name
+name <- trimws(name, which = c("both", "left", "right"));name
+names(data) <- c("id", name[-1])
+data <- data[,-157]
+#write.csv(data, file = "attribute4.csv")
+#data <- subset(data, select = -breakfast..breakfast)
+
+
+data <- read.csv("attribute4.csv")
+
+data <- subset(data, select = -c(breakfast, breakfast.1, brunch, brunch.1, dinner, dinner.1))
+data <- data[,-1]
+data[1,]
+#data <- unite(data, breakfast1, breakfast, breakfast.1, remove = F, sep = "")
+
+
+colnames(data)
+
+data <- rename(data, brunch = brunch..brunch, breakfast = breakfast..breakfast, dinner = dinner..dinner)
+
+data <- data %>% select(id, breakfast, brunch, dinner, everything())
+data[1,]
+
+data <- data %>% 
+  unite(lunch1, lunch, lunch.1, remove = F, sep = "") %>%
+  subset(select = -c(lunch, lunch.1))%>%
+  rename(lunch = lunch1) %>%
+  select(id, breakfast, lunch, brunch, dinner, everything())
+data[1,]
+dim(data)
+#write.csv(data, file = "attribute5.csv")
+```
+
+
+```{r}
+data <- read.csv("attribute5.csv", na.strings=c("","NA"))
+a <- rep(NA,5)
+for(i in 1:dim(data)[2]){
+  a[i] <- mean(!is.na(data[,i]))
+}
+colnames(data)[order(a, decreasing = T)]
+data <- data[1:69079,]
+#write.csv(data, file = "attribute6.csv")
+
+b <- subset(data, select = id)
+which(is.na(b) == T)
+summary(data[,2])
+length(data[,1])
+mean(data$breakfast != "")
+mean(is.na(data$RestaurantsPriceRange2))
+table(data$Ambience)
+
+
+is.empty(data[3,1])
+mean(data$breakfast!= "") 
+identical(data$lunch,data$lunch.1)
+
+
+data <- read.csv("attribute6.csv")
+data <- data[,-1]
+data <- data[, -1]
+a <- rep(NA,5)
+for(i in 1:dim(data)[2]){
+  a[i] <- mean(!is.na(data[,i]))
+}
+name <- colnames(data)[order(a, decreasing = T)]
+fillrate <- a[order(a, decreasing = T)]
+fillrate <- sprintf("%.4f",fillrate)
+table1 <- cbind(name, fillrate)
+write.csv(data, file = "attribute7.csv")
+write.csv(table1, file = "table.csv")
+```
+
+I took care of columns: breakfast, brunch, lunch, dinner. Deleted row after 69079 because they are empty. ---- See attribute7.csv. Made a table about of each variable's filling rate.----see table.csv. 
+
+```{r}
+data2 <- read.csv("restaurant.csv")
+df <- data2 %>%
+  select(X)
+#b <- df[4,1]
+#data2[26919,]
+cate <- data2$categories
+salon <- grepl("Salon",  cate)
+Beauty <- grepl("Beauty", cate)
+mix <- ifelse(salon > Beauty, salon, Beauty)
+grocery <- grepl("Grocery", cate)
+shopping <- grepl("Shopping", cate)
+mix1 <- ifelse(grocery > shopping, grocery, shopping)
+Gas <- grepl("Gas Station", cate)
+mix2 <- ifelse(mix > mix1, mix, mix1)
+mix3 <- ifelse(mix2 > Gas, mix2, Gas)
+data3 <- data2[!mix3, ]
+df3 <- data3 %>%
+  select(X, stars)
+```
+
+Get rid of some non-restaurants
