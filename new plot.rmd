@@ -1,0 +1,21 @@
+---
+title: "New plots"
+author: "Siyi Sun"
+date: "May 7, 2018"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+data <- read.csv("data_2.csv")
+data1 <- data %>% select(stars, ByAppointmentOnly, RestaurantsAttire, glutenFree, soyFree, valet, RestaurantsTakeOut, RestaurantsPriceRange, RestaurantsCounterService, vegan, vegetarian, classy, trendy, touristy, intimate, validated, street, hipster, DriveThru, HappyHour, video, BYOBCorkage, Corkage, halal, kosher)
+
+
+mean(data$valet != data$street, na.rm = T)
+data$valet[1:6]
+```
+
